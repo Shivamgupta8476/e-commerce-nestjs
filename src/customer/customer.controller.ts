@@ -1,6 +1,7 @@
 import {
     Body,
     Controller,
+    Delete,
     Get,
     HttpException,
     Logger,
@@ -75,6 +76,21 @@ import { CreateCustomerDto, customerLoginDto } from './customer.dto';
         return await this.service.updateCustomerData(CustomerId,updateCustomer);
       }catch(e){
           this.logger.error(`Error occured Updating Customer Data :${JSON.stringify(e)}`);
+          return  new HttpException('Internal Server Error', 500);
+
+      } 
+    }
+
+    @Delete(':CustomerId')
+    @ApiOkResponse({
+      description: 'Delete Customer Data',
+    })
+    async deleteCustomerData(@Param('CustomerId') CustomerId:string):Promise<any> {
+      this.logger.log("Enter into deleteCustomerData");
+      try{
+        return await this.service.deleteCustomerData(CustomerId);
+      }catch(e){
+          this.logger.error(`Error occured while deleting Customer Data :${JSON.stringify(e)}`);
           return  new HttpException('Internal Server Error', 500);
 
       } 

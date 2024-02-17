@@ -28,7 +28,11 @@ export class AppModule implements NestModule {
 
       consumer
       .apply(AuthorizationMiddleware)
-      .forRoutes({ path: '/customer/:CustomerId', method: RequestMethod.GET });
+      .forRoutes(
+        { path: '/customer/:CustomerId', method: RequestMethod.GET },
+        { path: '/customer/:CustomerId', method: RequestMethod.PUT },
+        { path: '/customer/:CustomerId', method: RequestMethod.DELETE},
+        );
   }
   
 }

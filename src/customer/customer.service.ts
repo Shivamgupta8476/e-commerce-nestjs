@@ -93,12 +93,6 @@ export class CustomerService {
         'Entered into getCustomerData',
         CustomerService.name,
       );
-      if (!userId) {
-        throw new BadRequestException('Please provide userId');
-      }
-      if (!isValidObjectId(userId)) {
-        throw new BadRequestException('UserId is not valid');
-      }
       const findCustomerDetails  = await this.CustomerServiceModel.findOne({ _id: userId }).exec();
       if (!findCustomerDetails) {
         return new HttpException('Customer Details not found', HttpStatus.NOT_FOUND);
@@ -120,24 +114,73 @@ export class CustomerService {
         'Entered into updateCustomerData',
         CustomerService.name,
       );
-      if (!userId) {
-        throw new BadRequestException('Please provide userId');
-      }
-      if (!isValidObjectId(userId)) {
-        throw new BadRequestException('UserId is not valid');
-      }
       const findCustomerDetails  = await this.CustomerServiceModel.findOne({ _id: userId }).exec();
       if (!findCustomerDetails) {
         return new HttpException('Customer Details not found', HttpStatus.NOT_FOUND);
       }
-
+      if(data.firstName){
+        findCustomerDetails.firstName=data.firstName
+      }
+      if(data.lastName){
+        findCustomerDetails.lastName=data.lastName
+      }
+      if(data.phoneNo){
+        findCustomerDetails.phoneNo=data.phoneNo
+      }
+      if(data.emailId){
+        findCustomerDetails.emailId=data.emailId
+      }
+      if(data.password){
+        const hashedPassword = await bcrypt.hash(data.password, 12);
+        findCustomerDetails.password=hashedPassword
+      }
+      if(data.billingAddress[0].state){
+        findCustomerDetails.billingAddress[0].state=data.billingAddress[0].state
+      }
+      if(data.billingAddress[0].city){
+        findCustomerDetails.billingAddress[0].city=data.billingAddress[0].city
+      }
+      if(data.billingAddress[0].pincode){
+        findCustomerDetails.billingAddress[0].pincode=data.billingAddress[0].pincode
+      }
+      if(data.shippingAddress[0].state){
+        findCustomerDetails.shippingAddress[0].state=data.shippingAddress[0].state
+      }
+      if(data.shippingAddress[0].city){
+        findCustomerDetails.shippingAddress[0].city=data.shippingAddress[0].city
+      }
+      if(data.shippingAddress[0].pincode){
+        findCustomerDetails.shippingAddress[0].pincode=data.shippingAddress[0].pincode
+      }
+      const updateResponse=await this.CustomerServiceModel.findByIdAndUpdate({ _id:findCustomerDetails._id }, findCustomerDetails, { new: true }).exec();
       return {
         status: true,
-        message: 'User profile details',
-        data: findCustomerDetails 
+        message: 'Customer profile Updated',
+        data: updateResponse 
       };
     } catch (error) {
       return error.message;
+    }
+  }
+
+
+  async deleteCustomerData(userId: string): Promise<any> {
+    try {
+      this.logger.log('Entered into deleteCustomerData', CustomerService.name);
+      
+      const findCustomerDetails = await this.CustomerServiceModel.findById(userId).exec();
+      if (!findCustomerDetails) {
+        return new HttpException('Customer Details not found', HttpStatus.NOT_FOUND);
+      }
+      
+      await this.CustomerServiceModel.deleteOne({ _id: userId }).exec()
+
+      return {
+        status: true,
+        message: 'Customer profile deleted successfully',
+      };
+    } catch (error) {
+      return new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 }
