@@ -54,3 +54,16 @@ export class CreateCustomerDto {
 
 }
 
+export class customerLoginDto {
+    @ApiProperty({ description: 'Email Address' })
+    @IsNotEmpty()
+    emailId: string;
+
+    @ApiProperty({ description: 'Password'})
+    @IsNotEmpty()
+    password: string;
+}
+
+
+
+
