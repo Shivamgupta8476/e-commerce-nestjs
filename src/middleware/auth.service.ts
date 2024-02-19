@@ -1,13 +1,18 @@
-import { HttpException, HttpStatus, Injectable, NestMiddleware } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  NestMiddleware,
+} from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
 import { jwtDecode } from 'jwt-decode';
 import * as jwt from 'jsonwebtoken';
 import { isValidObjectId } from 'mongoose';
-
+require('dotenv').config();
 
 @Injectable()
 export class AuthenticationMiddleware implements NestMiddleware {
-  private readonly secretKey = 'a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6'; 
+  private readonly secretKey = process.env.SECRET_KEY;
 
   use(req: Request, res: Response, next: NextFunction) {
     if (req.headers.authorization) {
@@ -16,14 +21,18 @@ export class AuthenticationMiddleware implements NestMiddleware {
         const decoded: any = jwtDecode(req_header_token);
         if (new Date(decoded.exp * 1000) > new Date()) {
           // Verify the token using the secret key
-          jwt.verify(req_header_token.split(" ")[1], this.secretKey, (err, decodedToken) => {
-            if (err) {
-              throw new HttpException('Invalid Token', 401);
-            } else {
-              req['decodedToken'] = decodedToken;
-              next();
-            }
-          });
+          jwt.verify(
+            req_header_token.split(' ')[1],
+            this.secretKey,
+            (err, decodedToken) => {
+              if (err) {
+                throw new HttpException('Invalid Token', 401);
+              } else {
+                req['user'] = decodedToken;
+                next();
+              }
+            },
+          );
         } else {
           throw new HttpException('Unauthorized Token', 401);
         }
@@ -38,8 +47,8 @@ export class AuthenticationMiddleware implements NestMiddleware {
 
 export class AuthorizationMiddleware implements NestMiddleware {
   use(req: Request, res: Response, next: NextFunction) {
-    const decodedToken = req['decodedToken'];
-    const id=req.params.CustomerId
+    const decodedToken = req['user'];
+    const id = req.params.CustomerId;
     if (!isValidObjectId(id)) {
       throw new HttpException('Not a valid user id', HttpStatus.BAD_REQUEST);
     }
@@ -49,6 +58,3 @@ export class AuthorizationMiddleware implements NestMiddleware {
     next();
   }
 }
-
-
-
