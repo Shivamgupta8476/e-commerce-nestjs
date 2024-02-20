@@ -40,9 +40,8 @@ export class CustomerService {
       const hashedPassword = await bcrypt.hash(data.password, 12);
       data.password = hashedPassword;
       const newCustomer = await this.CustomerServiceModel.create(data);
+      data['customer_id']=newCustomer._id;
       this.customer2Order.emit('create_customer', data);
-
-
       return {
         message: 'User created successfully',
         success: true,
