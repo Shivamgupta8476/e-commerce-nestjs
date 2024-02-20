@@ -40,6 +40,8 @@ export class CustomerService {
       const hashedPassword = await bcrypt.hash(data.password, 12);
       data.password = hashedPassword;
       const newCustomer = await this.CustomerServiceModel.create(data);
+      this.customer2Order.emit('create_customer', data);
+
 
       return {
         message: 'User created successfully',
@@ -76,8 +78,8 @@ export class CustomerService {
       let token = jwt.sign(
         {
           UserId: data.emailId,
+          role:isValidUser.role,
           id: isValidUser._id,
-          role: 'user',
         },
         'a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6',
         { expiresIn: '5h' }, //secretkey
@@ -87,6 +89,7 @@ export class CustomerService {
         message: 'User login successfull',
         data: {
           userId: isValidUser._id,
+          role:isValidUser.role,
           token: token,
         },
       };
@@ -174,6 +177,7 @@ export class CustomerService {
       if (data?.shippingAddress?.[0]?.pincode) {
         findCustomerDetails.shippingAddress[0].pincode = data.shippingAddress[0].pincode;
       }
+      this.customer2Order.emit('update_customer', findCustomerDetails);
   
       const updateResponse = await this.CustomerServiceModel.findByIdAndUpdate(
         { _id: findCustomerDetails._id },
@@ -207,7 +211,7 @@ export class CustomerService {
 
       await this.CustomerServiceModel.deleteOne({ _id: userId }).exec();
       this.customer2Product.emit('delete_customer', userId);
-
+      this.customer2Order.emit('delete_customer', userId);
       return {
         status: true,
         message: 'Customer profile deleted successfully',

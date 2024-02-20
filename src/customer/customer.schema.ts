@@ -31,6 +31,11 @@ export class CustomerModel {
   @IsNotEmpty()
   lastName: string;
 
+  @Prop({ required: true })
+  @ApiProperty()
+  @IsNotEmpty()
+  role: string;
+
   @Prop({
     required: true,
     unique: true,
